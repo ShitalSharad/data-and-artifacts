@@ -1,8 +1,8 @@
 name: Deploy website
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 jobs:
   test:
@@ -10,6 +10,13 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
       - name: Lint code
@@ -24,6 +31,13 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
       - name: Build website
@@ -33,19 +47,11 @@ jobs:
         run: |
           build_status=$(find dist/assets -type f -name "*.js" | head -n 1 | xargs basename)
           echo "build_status=$build_status" >> "$GITHUB_OUTPUT"
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: website-build
-          path: dist
+   
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Get build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: website-build
       - name: List files
         run: ls -la
       - name: Output filename
