@@ -31,7 +31,7 @@ jobs:
       - name: Publish JS filename
         id: build
         run: |
-          build_status=$(find dist/assets -type f -execdir echo 'build-status={}' >> $GITHUB_OUTPUT ';')
+          build_status=$(find dist/assets -type f -name "*.js" | head -n 1 | xargs basename)
           echo "build_status=$build_status" >> "$GITHUB_OUTPUT"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
